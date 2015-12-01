@@ -30,11 +30,11 @@
 		var scene, camera, renderer, stats, controls;
 		var light;
 		
-		var v = 1;
+		var v = 10;
+		var steps = [];
 		var plane, pole1, pole2, pole3, plate1, plate2, plate3, guiControls;
 		
 		var plateHeight, poleHeight, poleTop, poleBottom;
-		var pole1Pos, pole2Pos, pole3Pos;
 		
 		// load
 		var loader = new THREE.ObjectLoader();
@@ -107,7 +107,22 @@
 			plate2.position.set(pole2.position.x, poleBottom+plateHeight/2, pole2.position.z);
 			plate1.position.set(pole3.position.x, poleBottom+plateHeight/2, pole3.position.z);
 			
-			plate1.stat = 'rise';
+			pole1.arr = [];
+			pole1.arr.push(plate3);
+			pole2.arr = [];
+			pole2.arr.push(plate2);
+			pole3.arr = [];
+			pole3.arr.push(plate1);
+			
+			steps.push({ plate: plate2, pole: pole1 });
+			steps.push({ plate: plate1, pole: pole1 });
+			steps.push({ plate: plate1, pole: pole3 });
+			steps.push({ plate: plate2, pole: pole2 });
+			steps.push({ plate: plate1, pole: pole2 });
+			steps.push({ plate: plate3, pole: pole3 });
+			steps.push({ plate: plate1, pole: pole1 });
+			steps.push({ plate: plate2, pole: pole3 });
+			steps.push({ plate: plate1, pole: pole3 });
 
 			// gui controls
 
@@ -128,33 +143,49 @@
 			window.addEventListener('resize', onWindowResize, false);
 		}
 		
-		function movePlates() {
-			// console.log(plate1.position.y);
-			if (plate1.stat == 'rise') {
-				plate1.position.y += v;
-				if (plate1.position.y >= poleTop + plateHeight / 2) {
-					plate1.position.y = poleTop + plateHeight / 2;
-					plate1.stat = 'trans';
+		function movePlate(plate, pole) {
+			if (plate.stat != 'trans' && pole.arr.indexOf(plate) == -1) {
+				plate.position.y += v;
+				if (plate.position.y >= poleTop + plateHeight / 2) {
+					plate.position.y = poleTop + plateHeight / 2;
+					plate.stat = 'trans';
+					removePlate(plate);
 				}
-			} else if (plate1.stat == 'trans') {
-				plate1.position.z += v;
-				if (plate1.position.z >= pole2Pos) {
-					plate1.position.z = pole2Pos;
-					plate1.stat = 'fall';
+			} else if (plate.stat == 'trans') {
+				plate.position.z += pole.position.z > plate.position.z ? v : -v;
+				if (Math.abs(plate.position.z-pole.position.z) <= v) {
+					plate.position.z = pole.position.z;
+					plate.stat = 'fall';
+					pole.arr.push(plate);
 				}
-			} else if (plate1.stat == 'fall') {
-				plate1.position.y -= v;
-				if (plate1.position.y <= poleBottom + plateHeight / 2) {
-					plate1.position.y = poleBottom + plateHeight / 2;
-					plate1.stat = 'stop';
+			} else if (plate.stat == 'fall') {
+				plate.position.y -= v;
+				if (plate.position.y <= poleBottom + plateHeight*(pole.arr.length - .5)) {
+					plate.position.y = poleBottom + plateHeight*(pole.arr.length - .5);
+					delete plate.stat;
+					steps.splice(0, 1);
 				}
+			}
+		}
+		
+		function removePlate(plate) {
+			if (pole1.arr.indexOf(plate) != -1) {
+				pole1.arr.splice(pole1.arr.indexOf(plate), 1);
+			} else if (pole2.arr.indexOf(plate) != -1) {
+				pole2.arr.splice(pole2.arr.indexOf(plate), 1);
+			} else if (pole3.arr.indexOf(plate) != -1) {
+				pole3.arr.splice(pole3.arr.indexOf(plate), 1);
 			}
 		}
 
 		function animate() {
 			requestAnimationFrame(animate);
-
-			movePlates();
+			
+			if (steps.length != 0) {
+				movePlate(steps[0].plate, steps[0].pole);
+			}
+			
+			// console.log(pole1.arr.length, pole2.arr.length, pole3.arr.length);
 
 			controls.update();
 			stats.update();

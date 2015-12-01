@@ -45,22 +45,31 @@
 			"shininess": 30
 		},
 		{
-			"uuid": "04674C92-AC0C-482A-824E-C4450BE8BA7C",
-			"type": "MeshLambertMaterial",
-			"color": 6381921,
-			"emissive": 0
+			"uuid": "FA87B734-C350-41D3-86B0-4355BBC2D397",
+			"type": "MeshPhongMaterial",
+			"color": 1184274,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30,
+			"shading": 0
 		},
 		{
-			"uuid": "48CD3CE9-8615-4EA4-BB78-35AFC61D2C76",
-			"type": "MeshLambertMaterial",
-			"color": 6381921,
-			"emissive": 0
+			"uuid": "11553B85-9245-4590-8A4D-DB4A76AA9FA9",
+			"type": "MeshPhongMaterial",
+			"color": 8224125,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30,
+			"shading": 0
 		},
 		{
-			"uuid": "7BCE87DB-3C93-49C3-9505-4522BE625BA6",
-			"type": "MeshLambertMaterial",
-			"color": 6381921,
-			"emissive": 0
+			"uuid": "78189C5A-0160-4A30-923D-9B0086819410",
+			"type": "MeshPhongMaterial",
+			"color": 15658734,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30,
+			"shading": 0
 		},
 		{
 			"uuid": "D3301F57-6D2C-497B-8BB9-F150740FDD96",
@@ -98,7 +107,7 @@
 				"name": "plane",
 				"castShadow": true,
 				"receiveShadow": true,
-				"matrix": [2.0399999618530273,0,0,0,0,0.2199999988079071,0,0,0,0,4.760000228881836,0,0,30.06999969482422,0,1],
+				"matrix": [2.0399999618530273,0,0,0,0,0.2199999988079071,0,0,0,0,4.940000057220459,0,0,30.06999969482422,0,1],
 				"geometry": "F41EBEF6-0052-4FFD-A3ED-6DB5E462A0EF",
 				"material": "9E1F97B6-EC6C-4786-B23C-C09168AE0576"
 			},
@@ -108,7 +117,7 @@
 				"name": "pole1",
 				"matrix": [0.2199999988079071,0,0,0,0,1.4199999570846558,0,0,0,0,0.2199999988079071,0,6.059999942779541,112.5199966430664,133.58999633789062,1],
 				"geometry": "E534A66E-D491-4306-9D1E-0D92554BFBB0",
-				"material": "04674C92-AC0C-482A-824E-C4450BE8BA7C"
+				"material": "FA87B734-C350-41D3-86B0-4355BBC2D397"
 			},
 			{
 				"uuid": "2B9A9476-2C40-41F0-A229-03C100C18318",
@@ -116,7 +125,7 @@
 				"name": "pole2",
 				"matrix": [0.2199999988079071,0,0,0,0,1.4199999570846558,0,0,0,0,0.2199999988079071,0,6.070000171661377,112.5199966430664,-15.430000305175781,1],
 				"geometry": "E534A66E-D491-4306-9D1E-0D92554BFBB0",
-				"material": "48CD3CE9-8615-4EA4-BB78-35AFC61D2C76"
+				"material": "11553B85-9245-4590-8A4D-DB4A76AA9FA9"
 			},
 			{
 				"uuid": "267C52E8-D4DD-49D1-9B12-3E7A356A1162",
@@ -124,7 +133,7 @@
 				"name": "pole3",
 				"matrix": [0.2199999988079071,0,0,0,0,1.4199999570846558,0,0,0,0,0.2199999988079071,0,10.350000381469727,112.5199966430664,-157.3300018310547,1],
 				"geometry": "E534A66E-D491-4306-9D1E-0D92554BFBB0",
-				"material": "7BCE87DB-3C93-49C3-9505-4522BE625BA6"
+				"material": "78189C5A-0160-4A30-923D-9B0086819410"
 			},
 			{
 				"uuid": "684A13C3-6E7F-4760-91B6-4018A2E332A7",
