@@ -38,7 +38,7 @@
 		
 		// load
 		var loader = new THREE.ObjectLoader();
-		loader.load('data/hanoi-scene.json', function(result) {
+		loader.load('model/hanoi-scene.json', function(result) {
 			console.log(result);
 			scene = result;
 			result.children.forEach(function (obj) {
