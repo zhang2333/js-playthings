@@ -203,7 +203,7 @@
 				if (plate.position.y >= poleTop + plateHeight / 2) {
 					plate.position.y = poleTop + plateHeight / 2;
 					plate.stat = 'trans';
-					removePlateFromPole(plate);
+					operatePlateFromPole(plate, true);
 				}
 			} else if (plate.stat == 'trans') {
 				plate.position.z += pole.position.z > plate.position.z ? guiControls.velocity : -guiControls.velocity;
@@ -227,13 +227,18 @@
 			}
 		}
 		
-		function removePlateFromPole(plate) {
+		function operatePlateFromPole(plate, remove) {
 			for (var i in poles) {
 				if (poles[i].arr.indexOf(plate) != -1) {
-					poles[i].arr.splice(poles[i].arr.indexOf(plate), 1);
-					return;
+					if (remove == true) {
+						poles[i].arr.splice(poles[i].arr.indexOf(plate), 1);
+						return i;
+					} else {
+						return i;
+					}
 				}
 			}
+			return -1;
 		}
 
 		function animate() {
@@ -266,29 +271,29 @@
 			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 			
 			raycaster.setFromCamera( mouse, camera );
-			var check = function check(targets) {
-				var intersects = raycaster.intersectObjects(targets);
-				if (intersects.length > 0) {
-					if ( intersected != intersects[0].object ) {
-						if ( intersected ) {
-							intersected.material.emissive.setHex( intersected.currentHex );
-						}
-						intersected = intersects[0].object;
-						intersected.currentHex = intersected.material.emissive.getHex();
-						intersected.material.emissive.setHex( 0x555555 );
-					}
-				} else {
+			var targets = selected ? poles : plates;
+			var intersects = raycaster.intersectObjects(targets);
+			if (intersects.length > 0) {
+				if ( intersected != intersects[0].object ) {
 					if ( intersected ) {
 						intersected.material.emissive.setHex( intersected.currentHex );
 					}
-					intersected = null;
+					intersected = intersects[0].object;
+					// only the topest plate can be selected
+					if (!selected) {
+						var poleId = operatePlateFromPole(intersects[0].object, false);
+						if (poleId != -1) {
+							intersected = poles[poleId].arr[poles[poleId].arr.length - 1];
+						}
+					}
+					intersected.currentHex = intersected.material.emissive.getHex();
+					intersected.material.emissive.setHex( 0x555555 );
 				}
-			};
-			
-			if (!selected) {
-				check(plates);
 			} else {
-				check(poles);
+				if ( intersected ) {
+					intersected.material.emissive.setHex( intersected.currentHex );
+				}
+				intersected = null;
 			}
 			
 		}
