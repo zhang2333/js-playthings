@@ -257,19 +257,6 @@
 			}
 			
 			// console.log(poleBlack.arr.length, poleGray.arr.length, poleWihte.arr.length);
-			
-			controls.update();
-			stats.update();
-
-			renderer.render(scene, camera);
-		}
-		
-		function onMouseMove(event) {
-			event.preventDefault();
-			
-			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-			
 			raycaster.setFromCamera( mouse, camera );
 			var targets = selected ? poles : plates;
 			var intersects = raycaster.intersectObjects(targets);
@@ -296,10 +283,27 @@
 				intersected = null;
 			}
 			
+			// TODO: rotate camera
+			controls.update();
+			stats.update();
+
+			renderer.render(scene, camera);
+		}
+		
+		function onMouseMove(event) {
+			event.preventDefault();
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+			
 		}
 		
 		function onClick(event) {
 			event.preventDefault();
+			
+			if (guiControls.auto) {
+				return;
+			}
 			
 			var targets = selected ? poles : plates;
 			var intersects = raycaster.intersectObjects(targets);
