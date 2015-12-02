@@ -125,7 +125,11 @@
 			steps.push({ plate: plate1, pole: pole3 });
 
 			// gui controls
-
+			guiControls = new function () {
+				this.velocity = v;	
+			};
+			var datGUI = new dat.GUI();
+			datGUI.add(guiControls, 'velocity', 1, 50);
 
 			// controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -145,21 +149,21 @@
 		
 		function movePlate(plate, pole) {
 			if (plate.stat != 'trans' && pole.arr.indexOf(plate) == -1) {
-				plate.position.y += v;
+				plate.position.y += guiControls.velocity;
 				if (plate.position.y >= poleTop + plateHeight / 2) {
 					plate.position.y = poleTop + plateHeight / 2;
 					plate.stat = 'trans';
 					removePlate(plate);
 				}
 			} else if (plate.stat == 'trans') {
-				plate.position.z += pole.position.z > plate.position.z ? v : -v;
-				if (Math.abs(plate.position.z-pole.position.z) <= v) {
+				plate.position.z += pole.position.z > plate.position.z ? guiControls.velocity : -guiControls.velocity;
+				if (Math.abs(plate.position.z-pole.position.z) <= guiControls.velocity) {
 					plate.position.z = pole.position.z;
 					plate.stat = 'fall';
 					pole.arr.push(plate);
 				}
 			} else if (plate.stat == 'fall') {
-				plate.position.y -= v;
+				plate.position.y -= guiControls.velocity;
 				if (plate.position.y <= poleBottom + plateHeight*(pole.arr.length - .5)) {
 					plate.position.y = poleBottom + plateHeight*(pole.arr.length - .5);
 					delete plate.stat;
