@@ -26,7 +26,6 @@
 	<script>
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 		
-		accurate();
 		var scene, camera, renderer, stats, controls;
 		var light;
 		
@@ -83,7 +82,6 @@
 			var x = plane.position.x;
 			var y = plane.position.y;
 			var z = plane.position.z;
-			var xl = box.size().x;
 			var yl = box.size().y;
 			var zl = box.size().z;
 			
@@ -126,7 +124,7 @@
 			
 			steps.push({ which: 1, to: 0 });
 			steps.push({ which: 0, to: 0 });
-			steps.push({ which: 1, to: 2 });
+			steps.push({ which: 0, to: 2 });
 			steps.push({ which: 1, to: 1 });
 			steps.push({ which: 0, to: 1 });
 			steps.push({ which: 2, to: 2 });
@@ -136,10 +134,27 @@
 
 			// gui controls
 			guiControls = new function () {
-				this.velocity = v;	
+				this.velocity = v;
+				this.restart = function restart() {
+					for (var i in poles) {
+						poles[i].arr = [];
+					}
+					placePlate(2, 0);
+					placePlate(1, 0);
+					placePlate(0, 0);
+					steps = [];
+					steps.push({ which: 0, to: 2 });
+					steps.push({ which: 1, to: 1 });
+					steps.push({ which: 0, to: 1 });
+					steps.push({ which: 2, to: 2 });
+					steps.push({ which: 0, to: 0 });
+					steps.push({ which: 1, to: 2 });
+					steps.push({ which: 0, to: 2 });
+				};
 			};
 			var datGUI = new dat.GUI();
 			datGUI.add(guiControls, 'velocity', 1, 50);
+			datGUI.add(guiControls, 'restart');
 
 			// controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -155,6 +170,17 @@
 			container.appendChild(stats.domElement);
 
 			window.addEventListener('resize', onWindowResize, false);
+		}
+		
+		function placePlate(plateId, poleId) {
+			var plate = plates[plateId];
+			var pole = poles[poleId];
+			if (plate.stat) {
+				delete plate.stat;
+			}
+			plate.position.z = pole.position.z;
+			pole.arr.push(plate);
+			plate.position.y = poleBottom + plateHeight*(pole.arr.length - .5);
 		}
 		
 		function movePlate(plateId, poleId) {
@@ -198,6 +224,8 @@
 			
 			if (steps.length != 0) {
 				movePlate(steps[0].which, steps[0].to);
+			} else {
+				guiControls.restart();
 			}
 			
 			// console.log(poleBlack.arr.length, poleGray.arr.length, poleWihte.arr.length);
@@ -215,41 +243,6 @@
 			renderer.setSize(window.innerWidth, window.innerHeight);
 		}
 
-		function accurate() {
-			//加法
-    		Number.prototype.add = function(arg){
-     		   var r1,r2,m;
-   		     	try{r1=this.toString().split(".")[1].length}catch(e){r1=0}
-        		try{r2=arg.toString().split(".")[1].length}catch(e){r2=0}
-        		m=Math.pow(10,Math.max(r1,r2))
-        		return (this*m+arg*m)/m
-    		}
-   			//减法
-			Number.prototype.sub = function (arg){
-				return this.add(-arg);
-			}
-
-			//乘法
-			Number.prototype.mul = function (arg)
-			{
-				var m=0,s1=this.toString(),s2=arg.toString();
-				try{m+=s1.split(".")[1].length}catch(e){}
-				try{m+=s2.split(".")[1].length}catch(e){}
-				return Number(s1.replace(".",""))*Number(s2.replace(".",""))/Math.pow(10,m)
-			}
-
-			//除法
-			Number.prototype.div = function (arg){
-				var t1=0,t2=0,r1,r2;
-				try{t1=this.toString().split(".")[1].length}catch(e){}
-				try{t2=arg.toString().split(".")[1].length}catch(e){}
-				with(Math){
-					r1=Number(this.toString().replace(".",""))
-					r2=Number(arg.toString().replace(".",""))
-					return (r1/r2)*pow(10,t2-t1);
-				}
-			}
-		}
 	</script>
 </body>
 
