@@ -27,7 +27,7 @@
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 		
 		var scene, camera, renderer, stats, controls;
-		var light;
+		var lightm, mouse, raycaster, intersected, selected;
 		
 		var v = 10;
 		var steps = [];
@@ -135,6 +135,7 @@
 			// gui controls
 			guiControls = new function () {
 				this.velocity = v;
+				this.auto = true;
 				this.restart = function restart() {
 					for (var i in poles) {
 						poles[i].arr = [];
@@ -153,8 +154,12 @@
 				};
 			};
 			var datGUI = new dat.GUI();
+			datGUI.add(guiControls, 'auto');
 			datGUI.add(guiControls, 'velocity', 1, 50);
 			datGUI.add(guiControls, 'restart');
+			
+			raycaster = new THREE.Raycaster();
+			mouse = new THREE.Vector2();
 
 			// controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -169,6 +174,8 @@
 			stats.domElement.style.zIndex = 100;
 			container.appendChild(stats.domElement);
 
+			document.addEventListener('mousemove', onMouseMove, false);
+			document.addEventListener('click', onClick, false);
 			window.addEventListener('resize', onWindowResize, false);
 		}
 		
@@ -222,18 +229,72 @@
 		function animate() {
 			requestAnimationFrame(animate);
 			
-			if (steps.length != 0) {
-				movePlate(steps[0].which, steps[0].to);
-			} else {
-				guiControls.restart();
+			if (guiControls.auto) {
+				if (steps.length != 0) {
+					movePlate(steps[0].which, steps[0].to);
+				} else {
+					guiControls.restart();
+				}
 			}
 			
 			// console.log(poleBlack.arr.length, poleGray.arr.length, poleWihte.arr.length);
-
+			
 			controls.update();
 			stats.update();
 
 			renderer.render(scene, camera);
+		}
+		
+		function onMouseMove(event) {
+			event.preventDefault();
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+			
+			raycaster.setFromCamera( mouse, camera );
+			var check = function check(targets) {
+				var intersects = raycaster.intersectObjects(targets);
+				if (intersects.length > 0) {
+					if ( intersected != intersects[0].object ) {
+						if ( intersected ) {
+							intersected.material.emissive.setHex( intersected.currentHex );
+						}
+						intersected = intersects[0].object;
+						intersected.currentHex = intersected.material.emissive.getHex();
+						intersected.material.emissive.setHex( 0x555555 );
+					}
+				} else {
+					if ( intersected ) {
+						intersected.material.emissive.setHex( intersected.currentHex );
+					}
+					intersected = null;
+				}
+			};
+			
+			if (!selected) {
+				check(plates);
+			} else {
+				check(poles);
+			}
+			
+		}
+		
+		function onClick(event) {
+			event.preventDefault();
+			
+			var intersects = raycaster.intersectObjects(plates);
+			if (intersects.length > 0) {
+				if ( intersected == intersects[0].object ) {
+					selected = intersected;
+					selected.material.emissive.setHex( 0xff5555 );
+					intersected = null;
+				}
+			} else {
+				if ( selected ) {
+					selected.material.emissive.setHex( 0x000 );
+				}
+				selected = null;
+			}
 		}
 
 		function onWindowResize() {
@@ -242,7 +303,6 @@
 
 			renderer.setSize(window.innerWidth, window.innerHeight);
 		}
-
 	</script>
 </body>
 
