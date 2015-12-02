@@ -29,6 +29,7 @@
 		var scene, camera, renderer, stats, controls;
 		var lightm, mouse, raycaster, intersected, selected;
 		
+		var manualMove = {};
 		var v = 10;
 		var steps = [];
 		var poles = [];
@@ -137,6 +138,9 @@
 				this.velocity = v;
 				this.auto = true;
 				this.restart = function restart() {
+					selected = null;
+					intersected = null;
+					manualMove = {};
 					for (var i in poles) {
 						poles[i].arr = [];
 					}
@@ -191,8 +195,9 @@
 		}
 		
 		function movePlate(plateId, poleId) {
-			var plate = plates[plateId];
-			var pole = poles[poleId];
+			var plate = typeof(plateId) == 'object' ? plateId : plates[plateId];
+			var pole = typeof(poleId) == 'object' ? poleId : poles[poleId];
+			// start to rise
 			if (plate.stat != 'trans' && pole.arr.indexOf(plate) == -1) {
 				plate.position.y += guiControls.velocity;
 				if (plate.position.y >= poleTop + plateHeight / 2) {
@@ -212,7 +217,12 @@
 				if (plate.position.y <= poleBottom + plateHeight*(pole.arr.length - .5)) {
 					plate.position.y = poleBottom + plateHeight*(pole.arr.length - .5);
 					delete plate.stat;
-					steps.splice(0, 1);
+					if (manualMove.which) {
+						delete manualMove.which;
+						delete manualMove.to;
+					} else {
+						steps.splice(0, 1);
+					}
 				}
 			}
 		}
@@ -234,6 +244,10 @@
 					movePlate(steps[0].which, steps[0].to);
 				} else {
 					guiControls.restart();
+				}
+			} else {
+				if (manualMove.which) {
+					movePlate(manualMove.which, manualMove.to);
 				}
 			}
 			
@@ -282,12 +296,21 @@
 		function onClick(event) {
 			event.preventDefault();
 			
-			var intersects = raycaster.intersectObjects(plates);
+			var targets = selected ? poles : plates;
+			var intersects = raycaster.intersectObjects(targets);
 			if (intersects.length > 0) {
 				if ( intersected == intersects[0].object ) {
-					selected = intersected;
-					selected.material.emissive.setHex( 0xff5555 );
-					intersected = null;
+					if (selected) {
+						manualMove.which = selected;
+						manualMove.to = intersected;
+						selected.material.emissive.setHex( 0x000 );
+						intersected.material.emissive.setHex( 0x000 );
+						selected = intersected = null;
+					} else {
+						selected = intersected;
+						selected.material.emissive.setHex( 0xff5555 );
+						intersected = null;
+					}
 				}
 			} else {
 				if ( selected ) {
@@ -296,7 +319,7 @@
 				selected = null;
 			}
 		}
-
+		
 		function onWindowResize() {
 			camera.aspect = window.innerWidth / window.innerHeight;
 			camera.updateProjectionMatrix();
