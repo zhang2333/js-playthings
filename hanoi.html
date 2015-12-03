@@ -26,11 +26,13 @@
 	<script>
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 		
+		var CAMERA_ROTATION = (.01/180*Math.PI);
+		
 		var scene, camera, renderer, stats, controls;
 		var lightm, mouse, raycaster, intersected, selected;
 		
-		var manualMove = {};
 		var v = 10;
+		var manualMove = {};
 		var steps = [];
 		var poles = [];
 		var plates = [];
@@ -62,7 +64,7 @@
 
 		function init() {
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-			camera.position.set(371, 363, 350);
+			camera.position.set(350, 363, 350);
 
 			// renderer
 			renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -137,6 +139,7 @@
 			guiControls = new function () {
 				this.velocity = v;
 				this.auto = true;
+				this.rotateSpeed = 1;
 				this.restart = function restart() {
 					selected = null;
 					intersected = null;
@@ -160,6 +163,7 @@
 			var datGUI = new dat.GUI();
 			datGUI.add(guiControls, 'auto');
 			datGUI.add(guiControls, 'velocity', 1, 50);
+			datGUI.add(guiControls, 'rotateSpeed', 0, 100);
 			datGUI.add(guiControls, 'restart');
 			
 			raycaster = new THREE.Raycaster();
@@ -283,7 +287,16 @@
 				intersected = null;
 			}
 			
-			// TODO: rotate camera
+			// rotate camera
+			if (guiControls.rotateSpeed != 0) {
+				var z = camera.position.z;
+				camera.position.z = camera.position.z*Math.cos(guiControls.rotateSpeed*CAMERA_ROTATION)
+										+camera.position.x*Math.sin(guiControls.rotateSpeed*CAMERA_ROTATION);
+				var x = Math.sqrt(490*490 - camera.position.z*camera.position.z);
+				camera.position.x = camera.position.z - z >= 0 ? x : -x;
+			}
+			
+			
 			controls.update();
 			stats.update();
 
@@ -308,7 +321,9 @@
 			var targets = selected ? poles : plates;
 			var intersects = raycaster.intersectObjects(targets);
 			if (intersects.length > 0) {
-				if ( intersected == intersects[0].object ) {
+				var newId = operatePlateFromPole(intersects[0].object, false);
+				var intersectedId = operatePlateFromPole(intersected, false);
+				if ( newId == intersectedId ) {
 					if (selected) {
 						manualMove.which = selected;
 						manualMove.to = intersected;
