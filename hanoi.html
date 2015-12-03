@@ -56,6 +56,7 @@
 			poleWihte = result.children[3];
 			plate = result.children[4];
 			light = result.children[5];
+			scene.remove(plate);
 			
 			init();
 			animate();
@@ -108,27 +109,22 @@
 			
 			// set plates' position
 			plate.position.set(poleWihte.position.x, poleBottom+plateHeight/2, poleWihte.position.z);
-			plates.push(plate);
+			plate.weight = 1;
 			
 			// gui controls
 			guiControls = new function () {
 				this.velocity = v;
 				this.auto = true;
+				this.plates= 3;
 				this.rotateSpeed = 0;
 				this.resetCamera = function resetCamera() {
 					camera.position.set(350, 363, 350);
 				};
-				this.restart = function restart() {
-					camera.position.set(350, 363, 350);
-					selected = null;
-					intersected = null;
-					manualMove = {};
-					resetPlates();
-					steps = [];
-				};
+				this.restart = restart;
 			};
 			var datGUI = new dat.GUI();
 			datGUI.add(guiControls, 'auto');
+			datGUI.add(guiControls, 'plates', 1, 10);
 			datGUI.add(guiControls, 'velocity', 1, 50);
 			datGUI.add(guiControls, 'rotateSpeed', 0, 100);
 			datGUI.add(guiControls, 'resetCamera');
@@ -159,12 +155,35 @@
 			window.addEventListener('resize', onWindowResize, false);
 		}
 		
+		function restart() {
+			camera.position.set(350, 363, 350);
+			selected = null;
+			intersected = null;
+			manualMove = {};
+			// clear plates
+			for (var i in plates) {
+				scene.remove(plates[i]);
+			}
+			plates = [];
+			// add plates
+			for(var i = 0; i <= guiControls.plates - 1; i++) {
+				var p = new THREE.Mesh(plate.geometry.clone(), plate.material.clone());
+				p.scale.set(plate.scale.x*(1+(.2*i)), plate.scale.y, plate.scale.z*(1+(.2*i)));
+				p.material.color = new THREE.Color(randomColorHex());
+				p.weight = i + 1;
+				plates.push(p);
+				scene.add(p);
+			}
+			resetPlates();
+			steps = [];
+		}
+		
 		function resetPlates() {
 			for (var i in poles) {
 				poles[i].arr = [];
 			}
-			for (var i in plates) {
-				placePlate(i, 0);
+			for (var ii = plates.length-1; ii >= 0; ii--) {
+				placePlate(ii, 0);
 			}
 		}
 		
@@ -280,14 +299,6 @@
 			renderer.render(scene, camera);
 		}
 		
-		function onMouseMove(event) {
-			event.preventDefault();
-			
-			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-			
-		}
-		
 		function onClick(event) {
 			event.preventDefault();
 			
@@ -319,6 +330,18 @@
 				}
 				selected = null;
 			}
+		}
+		
+		function randomColorHex() {
+			return '#'+('00000'+(Math.random()*0x1000000<<0).toString(16)).slice(-6);
+		}
+		
+		function onMouseMove(event) {
+			event.preventDefault();
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+			
 		}
 		
 		function onWindowResize() {
