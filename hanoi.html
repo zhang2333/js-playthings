@@ -33,6 +33,7 @@
 		
 		var v = 10;
 		var manualMove = {};
+		var planeDefScale = {};
 		var steps = [];
 		var stepsCache = [];
 		var poles = [];
@@ -56,6 +57,11 @@
 			poleWihte = result.children[3];
 			plate = result.children[4];
 			light = result.children[5];
+			
+			planeDefScale.x = plane.scale.x;
+			planeDefScale.y = plane.scale.y;
+			planeDefScale.z = plane.scale.z;
+			plate.weight = 1;
 			scene.remove(plate);
 			
 			init();
@@ -107,10 +113,6 @@
 			box = new THREE.Box3().setFromObject(plate);
 			plateHeight = box.size().y;
 			
-			// set plates' position
-			plate.position.set(poleWihte.position.x, poleBottom+plateHeight/2, poleWihte.position.z);
-			plate.weight = 1;
-			
 			// gui controls
 			guiControls = new function () {
 				this.velocity = v;
@@ -124,7 +126,7 @@
 			};
 			var datGUI = new dat.GUI();
 			datGUI.add(guiControls, 'auto');
-			datGUI.add(guiControls, 'plates', 1, 10);
+			datGUI.add(guiControls, 'plates', 1, 10).step(1);
 			datGUI.add(guiControls, 'velocity', 1, 50);
 			datGUI.add(guiControls, 'rotateSpeed', 0, 100);
 			datGUI.add(guiControls, 'resetCamera');
@@ -135,7 +137,7 @@
 			mouse = new THREE.Vector2();
 			
 			// init starting
-			guiControls.restart();
+			restart();
 
 			// controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -155,6 +157,7 @@
 			window.addEventListener('resize', onWindowResize, false);
 		}
 		
+		// start or restart
 		function restart() {
 			camera.position.set(350, 363, 350);
 			selected = null;
@@ -174,10 +177,18 @@
 				plates.push(p);
 				scene.add(p);
 			}
+			if (guiControls.plates > 4) {
+				plane.scale.x = plane.scale.x * ((guiControls.plates - 4)*.05 +1);
+				plane.scale.z = plane.scale.z * ((guiControls.plates - 4)*.05 +1);
+			} else {
+				plane.scale.x = planeDefScale.x;
+				plane.scale.z = planeDefScale.z;
+			}
 			resetPlates();
 			steps = [];
 		}
 		
+		// reset position of plates
 		function resetPlates() {
 			for (var i in poles) {
 				poles[i].arr = [];
@@ -201,15 +212,19 @@
 		function movePlate(plateId, poleId) {
 			var plate = typeof(plateId) == 'object' ? plateId : plates[plateId];
 			var pole = typeof(poleId) == 'object' ? poleId : poles[poleId];
-			// start to rise
-			if (plate.stat != 'trans' && pole.arr.indexOf(plate) == -1) {
-				plate.position.y += guiControls.velocity;
-				if (plate.position.y >= poleTop + plateHeight / 2) {
-					plate.position.y = poleTop + plateHeight / 2;
-					plate.stat = 'trans';
-					operatePlateFromPole(plate, true);
+			// big one can't place over the smaller one
+			var f1 = pole.arr.length > 0 && pole.arr[pole.arr.length-1].weight < plate.weight;
+			// invalid operation
+			var f2 = pole.arr.indexOf(plate) != -1 && !plate.stat;
+			if (f1 || f2) {
+				if (manualMove.which) {
+					delete manualMove.which;
+					delete manualMove.to;
 				}
-			} else if (plate.stat == 'trans') {
+				return;
+			}
+			// rise or trans or fall
+			if (plate.stat == 'trans') {
 				plate.position.z += pole.position.z > plate.position.z ? guiControls.velocity : -guiControls.velocity;
 				if (Math.abs(plate.position.z-pole.position.z) <= guiControls.velocity) {
 					plate.position.z = pole.position.z;
@@ -227,6 +242,13 @@
 					} else {
 						steps.splice(0, 1);
 					}
+				}
+			} else {
+				plate.position.y += guiControls.velocity;
+				if (plate.position.y >= poleTop + plateHeight / 2) {
+					plate.position.y = poleTop + plateHeight / 2;
+					plate.stat = 'trans';
+					operatePlateFromPole(plate, true);
 				}
 			}
 		}
