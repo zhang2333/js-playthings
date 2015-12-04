@@ -98,7 +98,7 @@
 				this.plates= 4;
 				this.rotateSpeed = 0;
 				this.resetCamera = function resetCamera() {
-					camera.position.set(350, 363, 350);
+					camera.position.set(poleHeight*2.5+50, poleHeight*2.5+50, 50);
 				};
 				this.restart = restart;
 			};
@@ -204,7 +204,7 @@
 			box.setFromObject(plate);
 			plateHeight = box.size().y;
 			
-			camera.position.set(poleHeight*2.5, poleHeight*2.8, 50);
+			camera.position.set(poleHeight*2.5+50, poleHeight*2.5+50, 50);
 			
 			resetPlates();
 			steps = [];
@@ -328,11 +328,12 @@
 			}
 			
 			// rotate camera
+			var radius = Math.sqrt(camera.position.x*camera.position.x + camera.position.z*camera.position.z);
 			if (guiControls.rotateSpeed != 0) {
 				var z = camera.position.z;
 				camera.position.z = camera.position.z*Math.cos(guiControls.rotateSpeed*CAMERA_ROTATION)
 										+camera.position.x*Math.sin(guiControls.rotateSpeed*CAMERA_ROTATION);
-				var x = Math.sqrt(490*490 - camera.position.z*camera.position.z);
+				var x = Math.sqrt(radius*radius - camera.position.z*camera.position.z);
 				camera.position.x = camera.position.z - z >= 0 ? x : -x;
 			}
 			
