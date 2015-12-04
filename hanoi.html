@@ -33,7 +33,6 @@
 		
 		var v = 10;
 		var manualMove = {};
-		var planeDefScale = {};
 		var steps = [];
 		var stepsCache = [];
 		var poles = [];
@@ -41,6 +40,9 @@
 		var plane, poleBlack, poleGray, poleWihte, plate, guiControls;
 		
 		var plateHeight, poleHeight, poleTop, poleBottom;
+		
+		var planeDefScale = {};
+		var poleDefScaleY;
 		
 		// load
 		var loader = new THREE.ObjectLoader();
@@ -61,6 +63,10 @@
 			planeDefScale.x = plane.scale.x;
 			planeDefScale.y = plane.scale.y;
 			planeDefScale.z = plane.scale.z;
+			poleDefScaleY = poleWihte.scale.y;
+			poles.push(poleBlack);
+			poles.push(poleGray);
+			poles.push(poleWihte);
 			plate.weight = 1;
 			scene.remove(plate);
 			
@@ -69,7 +75,7 @@
 		});
 
 		function init() {
-			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100000);
 			camera.position.set(350, 363, 350);
 
 			// renderer
@@ -85,39 +91,11 @@
 			// AmbientLight
 			scene.add(new THREE.AmbientLight(0x404040));
 			
-			// init objects
-			var box = new THREE.Box3().setFromObject(plane);
-			var x = plane.position.x;
-			var y = plane.position.y;
-			var z = plane.position.z;
-			var yl = box.size().y;
-			var zl = box.size().z;
-			
-			box = new THREE.Box3().setFromObject(poleBlack);
-			poleHeight = box.size().y;
-			
-			// set poles' position
-			poleBlack.position.set(x, y+yl/2+poleHeight/2,  z+zl/3);
-			poleGray.position.set(x, y+yl/2+poleHeight/2,  z);
-			poleWihte.position.set(x, y+yl/2+poleHeight/2,  z-zl/3);
-			
-			poleTop = poleBlack.position.y + poleHeight/2;
-			poleBottom = poleBlack.position.y - poleHeight/2;
-			poleBlackPos = poleBlack.position.z;
-			poleGrayPos = poleGray.position.z;
-			poleWihtePos = poleWihte.position.z;
-			poles.push(poleBlack);
-			poles.push(poleGray);
-			poles.push(poleWihte);
-			
-			box = new THREE.Box3().setFromObject(plate);
-			plateHeight = box.size().y;
-			
 			// gui controls
 			guiControls = new function () {
 				this.velocity = v;
 				this.auto = true;
-				this.plates= 3;
+				this.plates= 4;
 				this.rotateSpeed = 0;
 				this.resetCamera = function resetCamera() {
 					camera.position.set(350, 363, 350);
@@ -126,7 +104,7 @@
 			};
 			var datGUI = new dat.GUI();
 			datGUI.add(guiControls, 'auto');
-			datGUI.add(guiControls, 'plates', 1, 10).step(1);
+			datGUI.add(guiControls, 'plates', 1, 50).step(1);
 			datGUI.add(guiControls, 'velocity', 1, 50);
 			datGUI.add(guiControls, 'rotateSpeed', 0, 100);
 			datGUI.add(guiControls, 'resetCamera');
@@ -177,13 +155,57 @@
 				plates.push(p);
 				scene.add(p);
 			}
-			if (guiControls.plates > 4) {
-				plane.scale.x = plane.scale.x * ((guiControls.plates - 4)*.05 +1);
-				plane.scale.z = plane.scale.z * ((guiControls.plates - 4)*.05 +1);
-			} else {
-				plane.scale.x = planeDefScale.x;
-				plane.scale.z = planeDefScale.z;
+			// init plane
+			plane.scale.x = planeDefScale.x;
+			plane.scale.z = planeDefScale.z;
+			
+			// init poles
+			for (var i in poles) {
+				poles[i].scale.y = poleDefScaleY;
 			}
+			// expand plane, poles
+			var box = new THREE.Box3().setFromObject(plane);
+			if (guiControls.plates > 4) {
+				// expand plane
+				var plateWidth = new THREE.Box3().setFromObject(plates[plates.length-1]).size().x;
+				var scale = .1;
+				while(box.size().z < 3 * plateWidth) {
+					plane.scale.x = planeDefScale.x * (scale +1);
+					plane.scale.z = planeDefScale.z * (scale +1);
+					scale += .1;
+					box.setFromObject(plane);
+				}
+				
+				// expand poles
+				if (guiControls.plates > 10) {
+					for (var i in poles) {
+						poles[i].scale.y = poleDefScaleY * ((guiControls.plates - 10)*.1 + 1);
+					}
+				}
+			}
+			// reset poles
+			box.setFromObject(plane);
+			var x = plane.position.x;
+			var y = plane.position.y;
+			var z = plane.position.z;
+			var yl = box.size().y;
+			var zl = box.size().z;
+			
+			box.setFromObject(poleBlack);
+			poleHeight = box.size().y;
+			
+			// set poles' position
+			poleBlack.position.set(x, y+yl/2+poleHeight/2,  z+zl/3);
+			poleGray.position.set(x, y+yl/2+poleHeight/2,  z);
+			poleWihte.position.set(x, y+yl/2+poleHeight/2,  z-zl/3);
+			poleTop = poleBlack.position.y + poleHeight/2;
+			poleBottom = poleBlack.position.y - poleHeight/2;
+			
+			box.setFromObject(plate);
+			plateHeight = box.size().y;
+			
+			camera.position.set(poleHeight*2.5, poleHeight*2.8, 50);
+			
 			resetPlates();
 			steps = [];
 		}
