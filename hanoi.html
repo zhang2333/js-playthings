@@ -29,7 +29,7 @@
 		var CAMERA_ROTATION = (.01/180*Math.PI);
 		
 		var scene, camera, renderer, stats, controls;
-		var lightm, mouse, raycaster, intersected, selected;
+		var light, mouse, raycaster, intersected, selected;
 		
 		var v = 10;
 		var manualMove = {};
@@ -80,7 +80,7 @@
 
 			// renderer
 			renderer = new THREE.WebGLRenderer({ antialias: true });
-			renderer.setClearColor(0xeeeeee);
+			renderer.setClearColor(0xffffff);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMapSoft = true;
@@ -89,7 +89,7 @@
 			container.appendChild(renderer.domElement);
 
 			// AmbientLight
-			scene.add(new THREE.AmbientLight(0x404040));
+			scene.add(new THREE.AmbientLight(0x909090));
 			
 			// gui controls
 			guiControls = new function () {
