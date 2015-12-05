@@ -95,7 +95,7 @@
 			guiControls = new function () {
 				this.velocity = v;
 				this.auto = true;
-				this.plates= 4;
+				this.plates= 5;
 				this.rotateSpeed = 0;
 				this.resetCamera = function resetCamera() {
 					camera.position.set(poleHeight*2.5+50, poleHeight*2.5+50, 50);
@@ -113,9 +113,6 @@
 			// plate interaction
 			raycaster = new THREE.Raycaster();
 			mouse = new THREE.Vector2();
-			
-			// init starting
-			restart();
 
 			// controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -133,6 +130,9 @@
 			document.addEventListener('mousemove', onMouseMove, false);
 			document.addEventListener('click', onClick, false);
 			window.addEventListener('resize', onWindowResize, false);
+			
+			// init starting
+			restart();
 		}
 		
 		// start or restart
@@ -208,6 +208,48 @@
 			
 			resetPlates();
 			steps = [];
+			stepsCache = [];
+			computeSteps();
+		}
+		
+		// compute steps and set into stepCache
+		function computeSteps() {
+			// TODO: optimize
+			if (poleBlack.arr.length <= 15) {
+				var plateArr = poleBlack.arr.reverse();
+				var froms = [];
+				for (var p in plateArr) {
+					plateArr[p] = plates.indexOf(plateArr[p]);
+					froms[p] = 0;
+				}
+				stepsCache = stepsCache.concat(move(plateArr, 2, [], froms));
+			}
+		}
+
+		function move(whichIds, to, arr, froms) {
+			// simplest move if it's true
+			if (whichIds.length == 1) {
+				froms[whichIds[0]] = to;
+				arr.push({ which: whichIds[0], to: to });
+			} else {
+				var last = whichIds[whichIds.length-1];
+				// get idle pole
+				var a = [0, 1, 2];
+				a.splice(a.indexOf(to), 1);
+				a.splice(a.indexOf(froms[last]), 1);
+				var idlePole = a[0];
+				
+				// 1. move upper plates
+				move(whichIds.slice(0, whichIds.length-1), idlePole, arr, froms);
+				
+				// 2. move the last plate to target
+				move([last], to, arr, froms);
+				
+				// 3. return upper plates
+				move(whichIds.slice(0, whichIds.length-1), to, arr, froms);
+			}
+			
+			return arr;
 		}
 		
 		// reset position of plates
@@ -280,10 +322,8 @@
 				if (poles[i].arr.indexOf(plate) != -1) {
 					if (remove == true) {
 						poles[i].arr.splice(poles[i].arr.indexOf(plate), 1);
-						return i;
-					} else {
-						return i;
 					}
+					return parseInt(i);
 				}
 			}
 			return -1;
@@ -297,7 +337,7 @@
 					movePlate(steps[0].which, steps[0].to);
 				} else {
 					resetPlates();
-					steps.concat(stepsCache);
+					steps = steps.concat(stepsCache);
 				}
 			} else {
 				if (manualMove.which) {
@@ -377,10 +417,6 @@
 			}
 		}
 		
-		function randomColorHex() {
-			return '#'+('00000'+(Math.random()*0x1000000<<0).toString(16)).slice(-6);
-		}
-		
 		function onMouseMove(event) {
 			event.preventDefault();
 			
@@ -394,6 +430,10 @@
 			camera.updateProjectionMatrix();
 
 			renderer.setSize(window.innerWidth, window.innerHeight);
+		}
+		
+		function randomColorHex() {
+			return '#'+('00000'+(Math.random()*0x1000000<<0).toString(16)).slice(-6);
 		}
 	</script>
 </body>
