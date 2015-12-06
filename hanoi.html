@@ -98,7 +98,7 @@
 				this.plates= 5;
 				this.rotateSpeed = 0;
 				this.resetCamera = function resetCamera() {
-					camera.position.set(poleHeight*2.5+50, poleHeight*2.5+50, 50);
+					camera.position.set(poleHeight*4+50, poleHeight*4+50, 50);
 				};
 				this.restart = restart;
 			};
@@ -204,7 +204,7 @@
 			box.setFromObject(plate);
 			plateHeight = box.size().y;
 			
-			camera.position.set(poleHeight*2.5+50, poleHeight*2.5+50, 50);
+			guiControls.resetCamera();
 			
 			resetPlates();
 			steps = [];
