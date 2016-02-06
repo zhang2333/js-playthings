@@ -76,8 +76,14 @@
 			"type": "MeshPhongMaterial",
 			"color": 16733195,
 			"emissive": 0,
-			"specular": 1118481,
-			"shininess": 30
+			"blending": "NormalBlending",
+			"shininess": 30,
+			"depthWrite": true,
+        	"specular": 8355711,
+        	"ambient": 10724259,
+        	"opacity": 0.85,
+        	"transparent": true,
+        	"depthTest": true
 		}],
 	"object": {
 		"uuid": "946F693D-25B9-4202-86F0-4148B41CABEB",

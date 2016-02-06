@@ -49,9 +49,6 @@
 		loader.load('model/hanoi-scene.json', function(result) {
 			console.log(result);
 			scene = result;
-			result.children.forEach(function (obj) {
-				// console.log(obj);
-			});
 			
 			plane = result.children[0];
 			poleBlack = result.children[1];
@@ -73,7 +70,7 @@
 			init();
 			animate();
 		});
-
+		
 		function init() {
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100000);
 			camera.position.set(350, 363, 350);
