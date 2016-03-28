@@ -17,11 +17,11 @@
 <body>
 	<div id="main"></div>
 
-	<script type="text/javascript" src="js/three.min.js"></script>
-	<script type="text/javascript" src="js/stats.min.js"></script>
-	<script type="text/javascript" src="js/dat.gui.min.js"></script>
-	<script type="text/javascript" src="js/OrbitControls.js"></script>
-	<script type="text/javascript" src="js/Detector.js"></script>
+	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script type="text/javascript" src="lib/dat.gui.min.js"></script>
+	<script type="text/javascript" src="lib/OrbitControls.js"></script>
+	<script type="text/javascript" src="lib/Detector.js"></script>
 
 	<script>
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -213,7 +213,7 @@
 		function computeSteps() {
 			// TODO: optimize
 			if (poleBlack.arr.length <= 15) {
-				var plateArr = poleBlack.arr.reverse();
+				var plateArr = poleBlack.arr.concat([]).reverse();
 				var froms = [];
 				for (var p in plateArr) {
 					plateArr[p] = plates.indexOf(plateArr[p]);
