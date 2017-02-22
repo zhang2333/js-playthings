@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Visual Sorting</title>
+    <style>
+      .main {
+        width: 800px;
+        height: 500px;
+        margin: 50px auto 0;
+        background-color: #eee;
+      }
+
+      .items-wrapper {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0 10px 0 10px;
+        list-style: none;
+        overflow: hidden;
+      }
+
+      .item-box {
+        width: 30px;
+        height: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
+        position: relative;
+        float: left;
+      }
+
+      .bar {
+        width: 30px;
+        height: 100px;
+        position: absolute;
+        left: 10px;
+        bottom: 0;
+        background-color: #aaa;
+      }
+
+      .bar-text {
+        display: block;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top: -20px;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="main">
+      <ul class="items-wrapper">
+        <!--<li class="item-box"><div class="bar"><span class="bar-text">100</span></div></li>
+        <li class="item-box"><div class="bar"></div></li>
+        <li class="item-box"><div class="bar"></div></li>-->
+      </ul>
+    </main>
+
+    <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        var array = [37, 10, 23, 15, 33, 22, 19, 5, 46, 24];
+        var $container = $('.items-wrapper');
+
+        function createEle(n) {
+          return '<li class="item-box" data-num="'
+            + n + '"><div class="bar"><span class="bar-text">'
+            + n + '</span></div></li>';
+        }
+
+        function build(arr) {
+          $container.empty();
+          arr.forEach(function (n) {
+            var eleStr = createEle(n);
+            $container.append($(eleStr));
+          });
+        }
+
+        function render() {
+          var $items = $('.item-box');
+          $items.each(function (i, e) {
+            var $this = $(this);
+            var n = $this.data('num');
+            var $bar = $this.find('.bar');
+            $bar.css('height', parseInt(n) * 10 + 'px');
+          });
+        }
+
+        function rechange(i, j) {
+          var $items = $('.item-box');
+          var $ie = $items.eq(i);
+          var $je = $items.eq(j);
+          var $t = $ie.clone().css('display', 'hidden');
+          $je.after($t);
+          $ie.after($je.detach());
+          $t.after($ie.detach());
+          $t.detach();
+        }
+
+        function sort(arr) {
+          arr = arr.slice();
+
+          build(arr);
+          render();
+
+          var steps = [];
+
+          for(var i = 0; i < arr.length; i++) {
+            for(var j = 0; j < arr.length; j++) {
+              if (arr[j] > arr[j+1]) {
+                var t = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = t;
+                steps.push([j, j+1]);
+                continue;
+              }
+            }
+          }
+
+          console.log('sorted:', arr);
+
+          var stimer = setInterval(function () {
+            if (steps.length < 1) {
+              clearInterval(stimer);
+              return;
+            }
+
+            var s = steps.shift();
+            rechange(s[0], s[1]);
+          }, 200);
+        }
+
+        sort(array);
+      });
+    </script>
+  </body>
+</html>
