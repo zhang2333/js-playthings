@@ -4,26 +4,25 @@
     <title>Visual Sorting</title>
     <style>
       .main {
-        width: 800px;
+        width: 1000px;
         height: 500px;
         margin: 50px auto 0;
-        background-color: #eee;
       }
 
       .items-wrapper {
-        width: 100%;
+        width: auto;
         height: 100%;
-        margin: 0;
-        padding: 0 10px 0 10px;
+        margin: 0 auto;
+        padding: 0 10px;
         list-style: none;
-        overflow: hidden;
+        /*overflow: hidden;*/
       }
 
       .item-box {
-        width: 30px;
+        /*width: 30px;*/
         height: 100%;
-        padding-left: 10px;
-        padding-right: 10px;
+        /*padding-left: 10px;*/
+        /*padding-right: 10px;*/
         position: relative;
         float: left;
       }
@@ -57,9 +56,73 @@
     </main>
 
     <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+
     <script>
+      var config = {
+        minNum: 1,
+        maxNum: 50,
+        initNum: 30,
+        speed: 50, // interval of rechange
+      };
+
+      function randomInt(min, max) {
+        return Math.round(Math.random() * (max - min) + min);
+      }
+
+      function genUnorderArray(min, max, num) {
+        var arr = [];
+        for (var i = 0; i < num; i++) {
+          arr.push(randomInt(min, max));
+        }
+        return arr;
+      }
+
+      var sortMethods = {
+        insert: function (arr, onchange) {
+          arr = arr.slice();
+          for (var i = 0; i < arr.length; i++) {
+            if (arr[i+1] < arr[i]) {
+              var end = i;
+              var s = arr[i+1];
+              while(s < arr[end]) {
+                arr[end+1] = arr[end];
+                onchange(end, end+1);
+                end--;
+              }
+              arr[end+1] = s;
+            }
+          }
+
+          return arr;
+        },
+
+        bubble: function (arr, onchange) {
+          arr = arr.slice(0);
+          for(var i = 0; i < arr.length; i++) {
+            for(var j = 0; j < arr.length; j++) {
+              if (arr[j] > arr[j+1]) {
+                var t = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = t;
+                
+                onchange(j, j+1);
+                continue;
+              }
+            }
+          }
+
+          return arr;
+        }
+      };
+
       $(document).ready(function () {
-        var array = [37, 10, 23, 15, 33, 22, 19, 5, 46, 24];
+        var barAttrs = {
+          width: 30,
+          padding: 10
+        };
+
+        var array = genUnorderArray(config.minNum, config.maxNum, config.initNum);
+
         var $container = $('.items-wrapper');
 
         function createEle(n) {
@@ -78,11 +141,28 @@
 
         function render() {
           var $items = $('.item-box');
+
+          // var unitWidth = config.initNum * 10 / 3;
+          var unitWidth = 950 / config.initNum;
+          var width = Math.floor(unitWidth * 0.6);
+          width = width > barAttrs.width ? barAttrs.width : width;
+          var padding = Math.floor(unitWidth * 0.4);
+          padding = padding / 2 > barAttrs.padding ? barAttrs.padding : padding / 2;
+
+          $items.css({
+            width: width,
+            'padding-left': padding + 'px',
+            'padding-right': padding + 'px'
+          });
+
           $items.each(function (i, e) {
             var $this = $(this);
             var n = $this.data('num');
             var $bar = $this.find('.bar');
-            $bar.css('height', parseInt(n) * 10 + 'px');
+            $bar.css({
+              width: width,
+              height: parseInt(n) * 10 + 'px'
+            });
           });
         }
 
@@ -105,17 +185,9 @@
 
           var steps = [];
 
-          for(var i = 0; i < arr.length; i++) {
-            for(var j = 0; j < arr.length; j++) {
-              if (arr[j] > arr[j+1]) {
-                var t = arr[j];
-                arr[j] = arr[j+1];
-                arr[j+1] = t;
-                steps.push([j, j+1]);
-                continue;
-              }
-            }
-          }
+          sortMethods.insert(arr, function (i, j) {
+            steps.push([i, j]);
+          });
 
           console.log('sorted:', arr);
 
@@ -127,7 +199,7 @@
 
             var s = steps.shift();
             rechange(s[0], s[1]);
-          }, 200);
+          }, config.speed);
         }
 
         sort(array);
