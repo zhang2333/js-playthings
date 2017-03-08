@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Conway's Game of Life</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            /*#canvas {
+                width: 100%;
+                height: 100%;
+            }*/
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas">
+        </canvas>
+        <script>
+            'use strict';
+
+            var canvas = document.getElementById('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 5;
+
+            var cxt = canvas.getContext('2d');
+            cxt.fillStyle = '#aaa';
+
+            var board, lastDraw = Date.now();
+            // offset
+            var ox = 0, oy = 0;
+            // size of cell
+            var cw = 10, ch = 10;
+            var colSize = parseInt(canvas.width / (cw + 1));
+            var rowSize = colSize;
+            var firstTime = true, interval = 1000;
+
+            function random(a, b) {
+                if (b == undefined) {
+                    b = a;
+                    a = 0;
+                }
+                return parseInt(Math.random() * b + a);
+            }
+
+            function init() {
+                if (!board) {
+                    board = [];
+                }
+
+                for(var i = 0; i < rowSize * colSize; i++) {
+                    board.push(0);
+                }
+
+                for(var i = 0; i < parseInt(rowSize * colSize / 5); i++) {
+                    board[random(rowSize) * colSize + random(colSize)] = 1;
+                }
+            }
+
+            function next(board) {
+                var grid = [], liveArr = [], deadArr = [];
+
+                // transform board to 2d grid
+                for (var i = 0; i < rowSize; i++) {
+                    grid[i] = board.slice(i * colSize, (i + 1) * colSize);
+                }
+
+                // check status
+                for (var i = 0; i < rowSize; i++) {
+                    for (var j = 0; j < colSize; j++) {
+                        // count the live
+                        var liveNum = 0;
+                        for (var y = i - 1; y <= i + 1; y++) {
+                            for(var x = j - 1; x <= j + 1; x++) {
+                                if (x < 0 || y < 0 || y >= rowSize || (x == j && y == i)) {
+                                    continue;
+                                }
+                                if (grid[y][x] > 0) {
+                                    liveNum++;
+                                }
+                            }
+                        }
+
+                        // live or die
+                        if (grid[i][j] === 0 && liveNum === 3) {
+                            liveArr.push([j, i]);
+                        } else if (liveNum !== 2 && liveNum !== 3) {
+                            deadArr.push([j, i]);
+                        }
+                    }
+                }
+
+                // live
+                liveArr.forEach(function (a) {
+                    grid[a[1]][a[0]] = 1;
+                });
+
+                // dead
+                deadArr.forEach(function (a) {
+                    grid[a[1]][a[0]] = 0;
+                });
+
+                board = [];
+                for (var i = 0; i < rowSize; i++) {
+                    board = board.concat(grid[i]);
+                }
+
+                grid = liveArr = deadArr = null;
+
+                return board;
+            }
+
+            function draw() {
+                var x, y;
+                for (var i = 0; i < board.length; i++) {
+                    y = parseInt(i / rowSize);
+                    x = i % colSize;
+                    if (board[i]) {
+                        cxt.beginPath();
+                        cxt.rect(x * (cw + 1) + ox, y * (ch + 1) + oy, cw, ch);
+                        cxt.fill();
+                    }
+                }
+
+                board = next(board);
+            }
+
+            function animate() {
+                if (Date.now() - lastDraw > interval || firstTime) {
+                    cxt.clearRect(0, 0, canvas.width, canvas.height);
+                    draw();
+                    lastDraw = Date.now();
+                    firstTime = false;
+                }
+                requestAnimationFrame(animate);
+            }
+
+            init();
+            animate();
+        </script>
+    </body>
+</html>
