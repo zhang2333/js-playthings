@@ -24,14 +24,14 @@
             var cxt = canvas.getContext('2d');
             cxt.fillStyle = '#aaa';
 
-            var board, lastDraw = Date.now();
+            var board, lastGen = Date.now();
             // offset
             var ox = 0, oy = 0;
             // size of cell
-            var cw = 10, ch = 10;
+            var cw = 12, ch = 12;
             var colSize = parseInt(canvas.width / (cw + 1));
-            var rowSize = colSize;
-            var firstTime = true, interval = 1000;
+            var rowSize = parseInt(canvas.height / (ch + 1));
+            var firstTime = true, interval = 500, isPaused = false;
 
             function random(a, b) {
                 if (b == undefined) {
@@ -39,6 +39,11 @@
                     a = 0;
                 }
                 return parseInt(Math.random() * b + a);
+            }
+
+            function setCell(x, y, state) {
+                state = state > 0 ? 1 : 0;
+                board[y * colSize + x] = 1;
             }
 
             function init() {
@@ -51,7 +56,7 @@
                 }
 
                 for(var i = 0; i < parseInt(rowSize * colSize / 5); i++) {
-                    board[random(rowSize) * colSize + random(colSize)] = 1;
+                    setCell(random(colSize), random(rowSize), 1);
                 }
             }
 
@@ -60,7 +65,7 @@
 
                 // transform board to 2d grid
                 for (var i = 0; i < rowSize; i++) {
-                    grid[i] = board.slice(i * colSize, (i + 1) * colSize);
+                    grid.push(board.slice(i * colSize, (i + 1) * colSize));
                 }
 
                 // check status
@@ -99,7 +104,7 @@
                 });
 
                 board = [];
-                for (var i = 0; i < rowSize; i++) {
+                for (var i = 0; i < grid.length; i++) {
                     board = board.concat(grid[i]);
                 }
 
@@ -111,7 +116,7 @@
             function draw() {
                 var x, y;
                 for (var i = 0; i < board.length; i++) {
-                    y = parseInt(i / rowSize);
+                    y = parseInt(i / colSize);
                     x = i % colSize;
                     if (board[i]) {
                         cxt.beginPath();
@@ -119,22 +124,56 @@
                         cxt.fill();
                     }
                 }
-
-                board = next(board);
             }
 
             function animate() {
-                if (Date.now() - lastDraw > interval || firstTime) {
-                    cxt.clearRect(0, 0, canvas.width, canvas.height);
-                    draw();
-                    lastDraw = Date.now();
+                cxt.clearRect(0, 0, canvas.width, canvas.height);
+                draw();
+                if (!isPaused && (Date.now() - lastGen > interval || firstTime)) {
+                    board = next(board);
+                    lastGen = Date.now();
                     firstTime = false;
                 }
                 requestAnimationFrame(animate);
             }
 
+            // handle events
+            (function () {
+                var dragging = false;
+                function handleEvent(e) {
+                    var x = Math.round(e.clientX * colSize / canvas.width);
+                    var y = Math.round(e.clientY * rowSize / canvas.height);
+                    setCell(x, y, 1);
+                }
+
+                canvas.onmousedown = function (e) {
+                    dragging = true;
+                    handleEvent(e);
+                }
+
+                canvas.onmouseup = function (e) {
+                    dragging = false;
+                    handleEvent(e);
+                }
+
+                canvas.onmousemove = function (e) {
+                    if (!dragging) return;
+                    handleEvent(e);
+                }
+
+                canvas.onclick = handleEvent;
+
+                document.onkeydown = function (e) {
+                    if (e.keyCode === 32 || e.keyCode === 13) {
+                        isPaused = !isPaused;
+                    }
+                }
+            })();
+
             init();
             animate();
+
+            console.info('interaction:', 'click or press space/enter');
         </script>
     </body>
 </html>
