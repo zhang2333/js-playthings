@@ -46,15 +46,16 @@
                 board[y * colSize + x] = 1;
             }
 
-            function init() {
-                if (!board) {
-                    board = [];
-                }
+            function resetBoard() {
+                board = [];
 
                 for(var i = 0; i < rowSize * colSize; i++) {
                     board.push(0);
                 }
+            }
 
+            function init() {
+                resetBoard();
                 for(var i = 0; i < parseInt(rowSize * colSize / 5); i++) {
                     setCell(random(colSize), random(rowSize), 1);
                 }
@@ -164,8 +165,13 @@
                 canvas.onclick = handleEvent;
 
                 document.onkeydown = function (e) {
-                    if (e.keyCode === 32 || e.keyCode === 13) {
+                    if (e.keyCode === 32) {
                         isPaused = !isPaused;
+                    }
+
+                    if (e.keyCode === 13) {
+                        isPaused = true;
+                        resetBoard();
                     }
                 }
             })();
@@ -173,7 +179,7 @@
             init();
             animate();
 
-            console.info('interaction:', 'click or press space/enter');
+            console.info('interaction:', 'click or press space(pause)/enter(drawing mode)');
         </script>
     </body>
 </html>
