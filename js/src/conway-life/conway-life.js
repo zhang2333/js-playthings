@@ -1,3 +1,7 @@
+/**
+ * Created by Louis Zhang (github.com/zhang2333)
+ */
+
 'use strict';
 
 function ConwayLife (canvasId) {
@@ -152,4 +156,6 @@ function random(a, b) {
     return parseInt(Math.random() * b + a);
 }
 
-module.exports = ConwayLife;
+try {
+    module.exports = ConwayLife;
+} catch (e) {}

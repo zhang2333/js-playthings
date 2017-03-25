@@ -1,6 +1,6 @@
 # JS demos
 
-## Conway's Game of Life [Preview](http://zhang2333.github.io/js-playthings/js/src/conway-life/conway-game-of-life.html)
+## Conway's Game of Life [Preview](http://zhang2333.github.io/js-playthings/js/src/conway-life/index.html)
 
 **interaction: space(pause) / enter(drawing mode)**
 

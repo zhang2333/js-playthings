@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Diffusion</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script src="./diffusion.js"></script>
+        <script>
+            'use strict';
+            // handle events
+            (function () {
+                var m = new Diffusion('canvas').start();
+            })();
+        </script>
+    </body>
+</html>
