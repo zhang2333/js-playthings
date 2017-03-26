@@ -10,6 +10,10 @@
 
 ![](https://raw.githubusercontent.com/zhang2333/js-playthings/gh-pages/js/screenshots/diffusion.png)
 
+## Melocules (Base on Diffusion) [Preview](http://zhang2333.github.io/js-playthings/js/src/melocules/index.html)
+
+![](https://raw.githubusercontent.com/zhang2333/js-playthings/gh-pages/js/screenshots/melocules.png)
+
 ## Visual Sorting [Preview](http://zhang2333.github.io/js-playthings/js/src/visual-sorting.html)
 
 ![](https://raw.githubusercontent.com/zhang2333/js-playthings/gh-pages/js/screenshots/visual-sorting.png)
