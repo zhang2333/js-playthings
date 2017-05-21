@@ -44,10 +44,6 @@ var Melocules;
                 }
                 s.draw(cxt);
             }
-
-            // console.log(shapes.map(function (s) {
-            //     return s.w;
-            // }).join(', '));
         }
 
         var dif = new Diffusion(canvasId);

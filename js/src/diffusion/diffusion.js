@@ -140,7 +140,7 @@ var Diffusion;
                 }
                 sColor = sColorNew;
             }
-            //处理六位的颜色值
+
             var sColorChange = [];
             for(var i=1; i<7; i+=2){
                 sColorChange.push(parseInt('0x'+sColor.slice(i,i+2)));	
