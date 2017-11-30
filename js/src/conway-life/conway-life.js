@@ -34,7 +34,6 @@ var ConwayLife = (function () {
 
         this.firstTime = true;
         this.isPaused = false;
-        this.lastGen = Date.now();
 
         this.canvas = canvas;
         this.cxt = cxt;
@@ -125,29 +124,33 @@ var ConwayLife = (function () {
             if (!board[i]) continue;
             y = parseInt(i / config.colSize);
             x = i % config.colSize;
+            var xPos = x * (config.cw + 1) + config.ox;
+            var yPos = y * (config.ch + 1) + config.oy;
             cxt.beginPath();
-            cxt.rect(x * (config.cw + 1) + config.ox, y * (config.ch + 1) + config.oy, config.cw, config.ch);
+            cxt.rect(xPos, yPos, config.cw, config.ch);
             // if (this.isStartDraw) {
             //     this.cxt.fillStyle = randomColor();
             // }
             cxt.fill();
         }
-        this.isStartDraw = false;
     }
 
     ConwayLife.prototype.animate = function () {
         this.emit('beforeUpdate');
 
-        if (!this.isPaused && (Date.now() - this.lastGen > this.config.interval || this.firstTime)) {
+        var isTime2Gen = Date.now() - this.lastGen > this.config.interval;
+        if (!this.isPaused && (isTime2Gen || this.firstTime)) {
             this.emit('beforeDraw');
-            
+
             this.clear();
             this.board = this.next(this.board);
-            this.lastGen = Date.now();
             this.firstTime = false;
-            this.isStartDraw = true;
 
+            this.isStartDraw = true;     
             this.draw(this.board);
+            this.isStartDraw = false;
+
+            this.lastGen = Date.now();
         }
         
         this.raf = requestAnimationFrame(this.animate.bind(this));
@@ -155,6 +158,7 @@ var ConwayLife = (function () {
 
     ConwayLife.prototype.start = function () {
         this.init();
+        this.lastGen = Date.now();
         this.animate();
         return this;
     }

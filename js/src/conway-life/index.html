@@ -10,53 +10,9 @@
     <body>
         <canvas id="canvas"></canvas>
         <script src="./conway-life.js"></script>
+        <script src="./game.js"></script>
         <script>
-            'use strict';
-            // handle events
-            (function () {
-                var cfConfig = {
-                    color: '#aaa'
-                }
-
-                var cf = new ConwayLife('canvas', cfConfig).start();
-
-                var dragging = false;
-                function handleEvent(e) {
-                    var x = Math.round(e.clientX * cf.config.colSize / cf.canvas.width);
-                    var y = Math.round(e.clientY * cf.config.rowSize / cf.canvas.height);
-                    cf.setCell(cf.board, x, y, 1);
-                }
-
-                cf.canvas.onmousedown = function (e) {
-                    dragging = true;
-                    handleEvent(e);
-                }
-
-                cf.canvas.onmouseup = function (e) {
-                    dragging = false;
-                    handleEvent(e);
-                }
-
-                cf.canvas.onmousemove = function (e) {
-                    if (!dragging) return;
-                    handleEvent(e);
-                }
-
-                cf.canvas.onclick = handleEvent;
-
-                document.onkeydown = function (e) {
-                    if (e.keyCode === 32) {
-                        cf.isPaused = !cf.isPaused;
-                    }
-
-                    if (e.keyCode === 13) {
-                        cf.isPaused = true;
-                        cf.resetBoard();
-                    }
-                }
-
-                console.info('interaction:', 'click or press space(pause)/enter(drawing mode)');
-            })();
+            console.info('interaction:', 'click or press space(pause)/enter(drawing mode)');
         </script>
     </body>
 </html>
