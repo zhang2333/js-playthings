@@ -27,7 +27,6 @@ var ConwayLife = (function () {
             initEntropy: 0.2
         };
 
-
         this.config = Object.assign({}, _config, config || {});
 
         var cxt = canvas.getContext('2d');

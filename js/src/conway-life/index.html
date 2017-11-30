@@ -14,13 +14,17 @@
             'use strict';
             // handle events
             (function () {
-                var cf = new ConwayLife('canvas').start();
+                var cfConfig = {
+                    color: '#aaa'
+                }
+
+                var cf = new ConwayLife('canvas', cfConfig).start();
 
                 var dragging = false;
                 function handleEvent(e) {
                     var x = Math.round(e.clientX * cf.config.colSize / cf.canvas.width);
                     var y = Math.round(e.clientY * cf.config.rowSize / cf.canvas.height);
-                    cf.setCell(x, y, 1);
+                    cf.setCell(cf.board, x, y, 1);
                 }
 
                 cf.canvas.onmousedown = function (e) {
