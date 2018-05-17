@@ -1,6 +1,6 @@
 # Three.js demos
 
-## Hanoi [Preview](http://zhang2333.github.io/js-playthings/threejs/hanoi.html)
+## Hanoi [Preview](http://zhang2333.github.io/js-playthings/threejs/src/hanoi/index.html)
 
 ![](https://raw.githubusercontent.com/zhang2333/js-playthings/gh-pages/threejs/screenshots/hanoi.jpg)
 
