@@ -1,14 +1,26 @@
 ;(function () {
     if (!Detector.webgl) Detector.addGetWebGLMessage()
 
-    const CAMERA_ROTATION = .01 / 180 * Math.PI
     const MODEL_PATH = '../../model/hanoi-scene.json'
+    const Config = {
+        auto: true,
+        velocity: 10,
+        velocityMin: 1,
+        velocityMax: 100,
+        platesNum: 5,
+        platesNumMin: 1,
+        platesNumMax: 50,
+        cameraRotation: .01 / 180 * Math.PI,
+        cameraRotateSpeed: 0,
+        hoverHighlightColor: 0x555555,
+        selectedHighlightColor: 0xff5555,
+    }
 
     class GUIControls {
         constructor(v, resetCamera, restart) {
-            this.auto = true
-            this.plates = 5
-            this.rotateSpeed = 0
+            this.auto = Config.auto
+            this.plates = Config.platesNum
+            this.rotateSpeed = Config.cameraRotateSpeed
 
             this.velocity = v
             this.restart = restart
@@ -20,7 +32,7 @@
         constructor(containerId, modelPath) {
             this.containerId = containerId
 
-            this.v = 10
+            this.v = Config.velocity
             this.manualMove = {}
             this.steps = []
             this.stepsCache = []
@@ -99,12 +111,12 @@
 
             const datGUI = new dat.GUI()
             datGUI.add(guiControls, 'auto')
-            datGUI.add(guiControls, 'plates', 1, 50).step(1)
-            datGUI.add(guiControls, 'velocity', 1, 50)
+            datGUI.add(guiControls, 'plates', Config.platesNumMin, Config.platesNumMax).step(1)
+            datGUI.add(guiControls, 'velocity', Config.velocityMin, Config.velocityMax)
             datGUI.add(guiControls, 'rotateSpeed', 0, 100)
             datGUI.add(guiControls, 'resetCamera')
             datGUI.add(guiControls, 'restart')
-    
+
             // plate interaction
             this.raycaster = new THREE.Raycaster()
             this.mouse = new THREE.Vector2()
@@ -353,7 +365,7 @@
                             this.intersected = poles[poleId].arr[poles[poleId].arr.length - 1]
                         }
                     }
-                    this.intersected.material.emissive.setHex(0x555555)
+                    this.intersected.material.emissive.setHex(Config.hoverHighlightColor)
                 }
             } else {
                 if (intersected) {
@@ -366,8 +378,8 @@
             const radius = Math.sqrt(camera.position.x * camera.position.x + camera.position.z * camera.position.z)
             if (guiControls.rotateSpeed != 0) {
                 const z = camera.position.z
-                camera.position.z = camera.position.z * Math.cos(guiControls.rotateSpeed * CAMERA_ROTATION) +
-                    camera.position.x * Math.sin(guiControls.rotateSpeed * CAMERA_ROTATION)
+                camera.position.z = camera.position.z * Math.cos(guiControls.rotateSpeed * Config.cameraRotation) +
+                    camera.position.x * Math.sin(guiControls.rotateSpeed * Config.cameraRotation)
                 const x = Math.sqrt(radius * radius - camera.position.z * camera.position.z)
                 camera.position.x = camera.position.z - z >= 0 ? x : -x
             }
@@ -404,7 +416,7 @@
                         this.selected = this.intersected = null
                     } else {
                         this.selected = intersected
-                        this.selected.material.emissive.setHex(0xff5555)
+                        this.selected.material.emissive.setHex(Config.selectedHighlightColor)
                         this.intersected = null
                     }
                 }
