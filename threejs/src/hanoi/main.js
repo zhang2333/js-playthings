@@ -6,10 +6,10 @@
         auto: true,
         velocity: 10,
         velocityMin: 1,
-        velocityMax: 100,
+        velocityMax: 500,
         platesNum: 5,
         platesNumMin: 1,
-        platesNumMax: 50,
+        platesNumMax: 100,
         cameraRotation: .01 / 180 * Math.PI,
         cameraRotateSpeed: 0,
         hoverHighlightColor: 0x555555,
@@ -34,8 +34,6 @@
 
             this.v = Config.velocity
             this.manualMove = {}
-            this.steps = []
-            this.stepsCache = []
             this.plates = []
 
             this._initPromise = new Promise((res) => {
@@ -230,15 +228,12 @@
             this.plateHeight = box.size().y
     
             this.guiControls.resetCamera()
-    
-            this._resetPlates()
-            this.steps = []
-            this.stepsCache = []
-            this._computeSteps()
+
+            this._reAutoRun()
         }
 
         _movePlate(plateId, poleId) {
-            const { manualMove, guiControls, poleBottom, plateHeight, poleTop, steps } = this
+            const { manualMove, guiControls, poleBottom, plateHeight, poleTop } = this
             const plate = typeof(plateId) == 'object' ? plateId : this.plates[plateId]
             const pole = typeof(poleId) == 'object' ? poleId : this.poles[poleId]
             // big one can't place over the smaller one
@@ -269,7 +264,7 @@
                         delete manualMove.which
                         delete manualMove.to
                     } else {
-                        steps.splice(0, 1)
+                        this.currentStep = null
                     }
                 }
             } else {
@@ -284,16 +279,13 @@
 
         // compute steps and set into stepCache
         _computeSteps() {
-            // TODO: optimize
-            if (this.poleBlack.arr.length <= 15) {
-                const plateArr = this.poleBlack.arr.concat([]).reverse()
-                const froms = []
-                for (let p in plateArr) {
-                    plateArr[p] = this.plates.indexOf(plateArr[p])
-                    froms[p] = 0
-                }
-                this.stepsCache = this.stepsCache.concat(move(plateArr, 2, [], froms))
+            const plateArr = this.poleBlack.arr.concat([]).reverse()
+            const froms = []
+            for (let p in plateArr) {
+                plateArr[p] = this.plates.indexOf(plateArr[p])
+                froms[p] = 0
             }
+            this._getNextStep = move(plateArr, 2, froms)
         }
 
         // reset position of plates
@@ -334,17 +326,28 @@
             return -1
         }
 
+        _reAutoRun() {
+            this.currentStep = null
+            this._getNextStep = null
+            this._resetPlates()
+            this._computeSteps()
+        }
+
         _animate() {
             window.requestAnimationFrame(this._animate.bind(this))
 
-            const { guiControls, steps, stepsCache, mouse, camera, raycaster, poles, plates, intersected, selected, manualMove } = this
+            const { guiControls, mouse, camera, raycaster, poles, plates, intersected, selected, manualMove } = this
 
             if (guiControls.auto) {
-                if (steps.length != 0) {
-                    this._movePlate(steps[0].which, steps[0].to)
-                } else {
-                    this._resetPlates()
-                    this.steps = steps.concat(stepsCache)
+                if (!this.currentStep) {
+                    this.currentStep = this._getNextStep ? this._getNextStep() : null
+                }
+
+                const step = this.currentStep
+                if (step !== null) {
+                    this._movePlate(step.which, step.to)
+                } else if (this._getNextStep) {
+                    this._reAutoRun()
                 }
             } else {
                 if (manualMove.which) {
@@ -437,35 +440,63 @@
 
     new Hanoi('main', MODEL_PATH).start()
 
-    function move(whichIds, to, arr, froms) {
-        if (!whichIds || !whichIds.length) return []
+    function move(whichIds, to, froms) {
+        const cache = {}
 
-        // simplest move if it's true
-        if (whichIds.length == 1) {
-            froms[whichIds[0]] = to
-            arr.push({ which: whichIds[0], to })
-        } else {
-            const last = whichIds[whichIds.length - 1]
-            // get idle pole
-            const a = [0, 1, 2]
-            a.splice(a.indexOf(to), 1)
-            a.splice(a.indexOf(froms[last]), 1)
-            const idlePole = a[0]
+        const calcCacheKey = (ids, to) => `${ids.join('_')}-${to}`
 
-            // 1. move upper plates
-            move(whichIds.slice(0, whichIds.length - 1), idlePole, arr, froms)
+        function _move(whichIds, to) {
+            if (!whichIds || !whichIds.length) return []
+    
+            const key = calcCacheKey(whichIds, to)
+            if (cache[key]) return [key]
+    
+            let arr = []
 
-            // 2. move the last plate to target
-            move([last], to, arr, froms)
-
-            // 3. return upper plates
-            move(whichIds.slice(0, whichIds.length - 1), to, arr, froms)
+            // simplest move if it's true
+            if (whichIds.length == 1) {
+                froms[whichIds[0]] = to
+                arr.push({ which: whichIds[0], to })
+            } else {
+                const last = whichIds[whichIds.length - 1]
+                // get idle pole
+                const a = [0, 1, 2]
+                a.splice(a.indexOf(to), 1)
+                a.splice(a.indexOf(froms[last]), 1)
+                const idlePole = a[0]
+    
+                // 1. move upper plates
+                const arr1 = _move(whichIds.slice(0, whichIds.length - 1), idlePole)
+    
+                // 2. move the last plate to target
+                const arr2 = _move([last], to)
+    
+                // 3. return upper plates
+                const arr3 = _move(whichIds.slice(0, whichIds.length - 1), to)
+    
+                arr = arr.concat(arr1, arr2, arr3)
+            }
+    
+            cache[key] = arr
+    
+            return arr
         }
 
-        return arr
+        let steps = _move(whichIds, to, froms)
+
+        return function next() {
+            if (steps.length < 1) return null
+    
+            while(typeof(steps[0]) === 'string') {
+                const k = steps.splice(0, 1)[0]
+                steps = cache[k].concat(steps)
+            }
+
+            return steps.splice(0, 1)[0]
+        }
     }
 
     function randomColorHex() {
-        return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+        return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6)
     }
 })()
